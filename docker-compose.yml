@@ -1,0 +1,68 @@
+version: "3.8"
+
+services:
+    client_frontend:
+        container_name: vue_frontend
+        build:
+            context: ./client
+            dockerfile: client.Dockerfile
+        ports:
+            - "8080:8080"
+        depends_on:
+            - eduhub_db
+        networks:
+            - eduhub_network
+
+    server_backend:
+        container_name: flask_backend
+        build:
+            context: ./server
+            dockerfile: server.Dockerfile
+        ports:
+            - "5101:5101"
+        depends_on:
+            - eduhub_db
+        networks:
+            - eduhub_network
+
+    eduhub_db:
+        container_name: eduhub_db
+        image: postgres:14.2-alpine
+        restart: always
+        ports:
+            - "5100:5432"
+        networks:
+            - eduhub_network
+        environment:
+            POSTGRES_DB: ${POSTGRES_DB}
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+        volumes:
+            - ./data:/docker-entrypoint-initdb.d
+            - postgres_data:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U admin -d ${POSTGRES_DB}"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+
+    pgadmin:
+        container_name: pgadmin
+        image: dpage/pgadmin4
+        restart: always
+        ports:
+            - "8081:80"
+        networks:
+            - eduhub_network
+        environment:
+            PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+            PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+        depends_on:
+            - record_db
+
+volumes:
+    postgres_data:
+
+networks:
+    eduhub_network:
+        driver: bridge
