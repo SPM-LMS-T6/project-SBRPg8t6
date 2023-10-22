@@ -3,6 +3,7 @@ import { ref, onMounted, watch } from 'vue'
 import RoleApplication from './RoleApplication.vue'
 import CalculateRoleMatch from './CalculateRoleMatch.vue'
 import { getStaffSkills } from '../service/staffskills.service'
+import { getStaffDetails } from '../service/staffDetails.service'
 
 export default {
   components: { RoleApplication, CalculateRoleMatch },
@@ -11,25 +12,26 @@ export default {
       type: Object,
       required: true,
       default: () => ({
-        role_name: 'TBC',
-        role_listing_desc: 'No description available',
-        role_listing_open: 'TBC',
-        role_listing_close: 'TBC',
-        role_skills: ['TBC'],
-        role_listing_creator: ['TBC', 'TBC'],
-        role_listing_updater: ['TBC', 'TBC'],
-        role_listing_id: 'TBC',
-        role_id: 'TBC'
+        role_name: '',
+        role_listing_desc: '',
+        role_listing_open: '',
+        role_listing_close: '',
+        role_skills: [''],
+        role_listing_creator: ['', ''],
+        role_listing_updater: ['', ''],
+        role_listing_id: '',
+        role_id: ''
       })
     }
   },
 
   setup(props) {
-    const user = 'HR'
-    const skillsList = ref(null)
+    const user = ref('')
+    const id = localStorage.getItem('id')
+    const skillsList = ref([])
     const staffSkills = ref([])
     const maxSkillsToShow = 2
-    const allRoleSkills = ref([])
+    const allRoleSkills = ref(props.roleDetails.role_skills)
     const visibleSkills = ref(props.roleDetails.role_skills.slice(0, maxSkillsToShow))
     const remainingSkills = ref(props.roleDetails.role_skills.slice(maxSkillsToShow))
     const showMore = ref(remainingSkills.value.length > 0)
@@ -58,12 +60,21 @@ export default {
 
     const fetchStaffSkills = async () => {
       try {
-        const response = await getStaffSkills(123456789)
+        const response = await getStaffSkills(id)
         setData(response.Results)
       } catch (error) {
-        console.error('Error fetching data:', error)
+        const response = []
+        setData(response)
       }
     }
+
+    getStaffDetails(id)
+      .then((response) => {
+        user.value = response.Results[0].sys_role
+      })
+      .catch((error) => {
+        console.error('Error fetching data:', error)
+      })
 
     watch(
       () => props.roleDetails,
@@ -95,11 +106,13 @@ export default {
   <RoleApplication :role-details="roleDetails" />
   <div class="roleDetails container-fluid px-5">
     <div class="d-sm-flex justify-content-between">
-      <h1 class="my-auto">{{ roleDetails.role_name }}</h1>
+      <h1 id="role_name" class="my-auto">
+        {{ roleDetails.role_name == '' ? 'TBC' : roleDetails.role_name }}
+      </h1>
       <button
-        v-if="user == 'HR'"
+        v-if="user == 'hr'"
+        id="update_btn"
         role="link"
-        aria-label="Apply to Backend Engineer Intern, Stream Computing - 2024 on company website"
         class="updateBtn w-sm-50 my-3 artdeco-button artdeco-button--icon-right artdeco-button--3 artdeco-button--primary ember-view"
         @click="
           $router.push({ path: '/update', query: { selectedData: JSON.stringify(roleDetails) } })
@@ -111,29 +124,30 @@ export default {
 
     <div class="details">
       <div>
-        <span class="fw-bold">Posted On: </span>
-        <span class="check">{{ roleDetails.role_listing_open }}</span>
+        <span id="posted_on" class="fw-bold">Posted On: </span>
+        <span id="open" class="check">{{
+          roleDetails.role_listing_open == '' ? 'TBC' : roleDetails.role_listing_open
+        }}</span>
       </div>
       <div>
-        <span class="fw-bold isPosted"
-          >{{
-            roleDetails.role_listing_updater[0] == 'TBC' || user == 'Staff'
-              ? 'Posted By: '
-              : 'Updated By: '
-          }}
-        </span>
-        <a class="f-underline check isCreated">{{
-          roleDetails.role_listing_updater.fname == 'TBC' || user == 'Staff'
-            ? roleDetails.role_listing_creator[0]
-            : roleDetails.role_listing_updater[0]
+        <span class="fw-bold isPosted">{{ user == 'hr' ? 'Updated By: ' : 'Posted By: ' }} </span>
+        <a id="creatorUpdater" class="f-underline check isCreated">{{
+          roleDetails.role_listing_updater.length == 0 ||
+          roleDetails.role_listing_creator.length == 0
+            ? 'TBC'
+            : user == 'hr'
+            ? roleDetails.role_listing_updater[0]
+            : roleDetails.role_listing_creator[0]
         }}</a>
       </div>
     </div>
     <div>
-      <span class="fw-bold">Deadline: </span>
-      <span class="check">{{ roleDetails.role_listing_close }}</span>
+      <span id="closed_on" class="fw-bold">Deadline: </span>
+      <span id="close" class="check">{{
+        roleDetails.role_listing_close == '' ? 'TBC' : roleDetails.role_listing_close
+      }}</span>
     </div>
-    <CalculateRoleMatch class="my-2" :role-skills="allRoleSkills" />
+    <CalculateRoleMatch id="CalculateRoleMatch" class="my-2" :role-skills="allRoleSkills" />
     <div class="d-flex align-items-center">
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -151,19 +165,20 @@ export default {
       </svg>
       <div class="skills-container">
         <div ref="skillsList" class="skills-list">
-          <span class="fw-bold">Skills: </span>
+          <span id="skills" class="fw-bold">Skills: </span>
           <span v-for="(skill, index) in visibleSkills" :key="index">
             <div
               :class="
                 skill !== 'TBC' && staffSkills && staffSkills.includes(skill)
-                  ? 'badge rounded-pill bg-success mx-1'
-                  : 'badge rounded-pill bg-secondary mx-1'
+                  ? 'badge rounded-pill bg-success mx-1 skillColor'
+                  : 'badge rounded-pill bg-secondary mx-1 skillColor'
               "
             >
               {{ skill }}
             </div>
             <template v-if="index !== visibleSkills.length - 1 || showMore"> </template>
           </span>
+          <span v-if="visibleSkills.length === 0" id="noSkills">No skills required</span>
           <a v-if="showMore" class="showMore f-underline" @click="toggleShowMore">
             + {{ remainingSkills.length }} more
           </a>
@@ -171,8 +186,8 @@ export default {
       </div>
     </div>
     <button
+      id="apply_btn"
       role="link"
-      aria-label="Apply to Backend Engineer Intern, Stream Computing - 2024 on company website"
       class="defaultBtn d-flex w-sm-50 my-3 artdeco-button artdeco-button--icon-right artdeco-button--3 artdeco-button--primary ember-view"
       data-bs-toggle="modal"
       data-bs-target="#applicationModal"
@@ -195,10 +210,10 @@ export default {
       </div>
       <span class="artdeco-button__text"> Apply </span>
     </button>
-    <h2>About the job</h2>
-    <h5 class="my-3">Responsibilities</h5>
-    <div class="description">
-      {{ roleDetails.role_listing_desc }}
+    <h2 id="descLabel">About the job</h2>
+    <h5 id="responsibilities" class="my-3">Responsibilities</h5>
+    <div id="desc" class="description">
+      {{ roleDetails.role_listing_desc == '' ? 'TBC' : roleDetails.role_listing_desc }}
     </div>
   </div>
 </template>
