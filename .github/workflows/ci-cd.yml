@@ -38,9 +38,6 @@ jobs:
   
       - name: Install Python Dependencies
         run: pip install -r server/requirements.txt
-
-      # - name: Run Backend Tests
-      #   run: pytest
   
       - name: Lint Vue Code
         run: npm run lint --prefix client
@@ -54,8 +51,9 @@ jobs:
 
     - name: Build and Run Docker Containers
       run: |
-        docker-compose build
-        docker-compose up -d
+        docker compose --profile production build
+        docker compose --profile production up -d
+        docker compose run tests pytest /app/tests # run backend tests
 
     - name: Deploy
       run: |
