@@ -123,4 +123,9 @@ describe('User Workflow', () => {
     cy.get('.table').should('exist').contains('Agile Coach (SM)')
     cy.get('.table').contains('applied')
   })
+
+  it('should log out successfully', () => {
+    cy.get('.logout').click()
+    cy.get('.login').should('exist')
+  })
 })
