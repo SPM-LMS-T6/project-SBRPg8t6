@@ -161,16 +161,6 @@ services:
         restart: always
         ports:
             - "5100:3306"
-        networks:
-            - eduhub_network
-        environment:
-            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-            MYSQL_DATABASE: ${MYSQL_DATABASE}
-            MYSQL_USER: ${MYSQL_USER}
-            MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-        volumes:
-            - ./data:/docker-entrypoint-initdb.d
-            - mysql-data:/var/lib/mysql
         healthcheck:
             test:
                 [
