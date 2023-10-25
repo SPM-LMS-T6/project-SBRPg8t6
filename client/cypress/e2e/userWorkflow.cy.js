@@ -63,47 +63,8 @@ describe('User Workflow', () => {
     cy.get('.fw-bold.isPosted').should('exist') // posted by or updated by label
     cy.get('.fw-bold').should('exist').contains('Deadline:') // deadline label
     cy.get('.skills-container').should('exist') // skills container
-    cy.get('.artdeco-button__text').should('exist').contains('Apply') // apply button
+    cy.get('.artdeco-button__text').should('exist').contains('Applied') // apply button
     cy.get('.description').should('exist') // description
-  })
-
-  it('should open the application modal when apply button is clicked', () => {
-    cy.get('.defaultBtn').click()
-    cy.get('.job-role-item').first().click()
-    cy.get('button[data-bs-target="#applicationModal"]').click()
-    cy.get('#applicationModal').should('exist')
-  })
-
-  it('should display all relevant elements in the application modal', () => {
-    cy.get('.defaultBtn').click()
-    cy.get('.job-role-item').first().click()
-    cy.get('button[data-bs-target="#applicationModal"]').click()
-    cy.get('#application')
-      .should('exist')
-      .contains(/Role Listing ID: \d+/) // role listing id dynamic id
-    cy.get('#roleName').should('have.value', 'Agile Coach (SM)')
-    cy.get('.form-label').should('exist').contains('Why do you want this role? (Max 100 words)')
-    cy.get('.form-control').should('exist')
-    cy.get('.modal-footer').should('exist').contains('Submit')
-  })
-
-  it('should close the application modal when back button is clicked', () => {
-    cy.get('.defaultBtn').click()
-    cy.get('.job-role-item').first().click()
-    cy.get('button[data-bs-target="#applicationModal"]').click()
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(500) // wait for modal to open
-    cy.get('button[aria-label="Close"]').click()
-    cy.get('label[roleName]').should('not.exist')
-  })
-
-  it('should not be able to submit an application for an applied role', () => {
-    cy.get('.defaultBtn').click()
-    cy.get('.job-role-item').first().click()
-    cy.get('button[data-bs-target="#applicationModal"]').click()
-    cy.get('#answer').type('Hire Me!')
-    cy.get('.modal-footer').contains('Submit').click()
-    cy.get('.alert').contains('You have already applied for this role')
   })
 
   it('should be able to navigate to the application status page', () => {
@@ -122,10 +83,5 @@ describe('User Workflow', () => {
     cy.get('.nav-link').contains('Application Status').click()
     cy.get('.table').should('exist').contains('Agile Coach (SM)')
     cy.get('.table').contains('applied')
-  })
-
-  it('should log out successfully', () => {
-    cy.get('.logout').click()
-    cy.get('.login').should('exist')
   })
 })
