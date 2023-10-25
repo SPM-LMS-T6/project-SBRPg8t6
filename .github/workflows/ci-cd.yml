@@ -56,6 +56,8 @@ jobs:
 
     EC2-Deploy:
         runs-on: ubuntu-latest
+
+        needs: build-and-test  # this job only runs after build-and-test is done
         
         steps:
           - id: deploy
@@ -64,3 +66,4 @@ jobs:
               aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
               aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
               aws_default_region: ap-southeast-1
+              repo_env: .env
