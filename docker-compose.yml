@@ -8,7 +8,8 @@ services:
         restart: always
         ports:
             - "5100:3306"
-        profiles: ["production", "test"]
+        x-defaults: &defaults
+            profiles: ["production"]
         networks:
             - eduhub_network
         environment:
