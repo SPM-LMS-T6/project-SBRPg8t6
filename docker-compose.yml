@@ -155,7 +155,7 @@ services:
             - eduhub_network
 
     # For Deployment Purposes
-        eduhub_db_deploy:
+    eduhub_db_deploy:
         container_name: eduhub_db_deploy_mysql
         image: mysql:8.0
         restart: always
