@@ -154,9 +154,9 @@ services:
         networks:
             - eduhub_network
 
-    # For Deployment
-        eduhub_db:
-        container_name: eduhub_db_mysql
+    # For Deployment Purposes
+        eduhub_db_deploy:
+        container_name: eduhub_db_deploy_mysql
         image: mysql:8.0
         restart: always
         ports:
@@ -186,8 +186,8 @@ services:
             timeout: 5s
             retries: 20
             
-    phpmyadmin:
-        container_name: phpmyadmin
+    phpmyadmin_deploy:
+        container_name: phpmyadmin_deploy
         image: phpmyadmin
         restart: always
         ports:
@@ -200,11 +200,11 @@ services:
             PMA_USER: root
             PMA_PASSWORD: root
         depends_on:
-            eduhub_db:
+            eduhub_db_deploy:
                 condition: service_healthy
 
-    server_backend:
-        container_name: eduhub_backend_flask
+    server_backend_deploy:
+        container_name: eduhub_backend_flask_deploy
         build:
             context: ./server
             dockerfile: server.Dockerfile
@@ -220,7 +220,7 @@ services:
             MYSQL_USER: ${MYSQL_USER}
             MYSQL_PASSWORD: ${MYSQL_PASSWORD}
         depends_on:
-            eduhub_db:
+            eduhub_db_deploy:
                 condition: service_healthy
         networks:
             - eduhub_network
@@ -231,15 +231,15 @@ services:
             timeout: 10s
             retries: 3
 
-    client_frontend:
-        container_name: eduhub_frontend_vue
+    client_frontend_deploy:
+        container_name: eduhub_frontend_vue_deploy
         build:
             context: ./client
             dockerfile: client.Dockerfile
         ports:
             - "8080:8080"
         depends_on:
-            eduhub_db:
+            eduhub_db_deploy:
                 condition: service_healthy
         networks:
             - eduhub_network
